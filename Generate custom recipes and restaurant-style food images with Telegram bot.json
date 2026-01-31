@@ -1,0 +1,306 @@
+{
+  "name": "Generate custom recipes and restaurant-style food images with Telegram bot",
+  "nodes": [
+    {
+      "parameters": {
+        "model": "openai/gpt-4o-mini",
+        "options": {}
+      },
+      "id": "525c226c-d024-4e37-8052-a2b3a0996bf1",
+      "name": "OpenRouter Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "position": [
+        2528,
+        576
+      ],
+      "typeVersion": 1,
+      "credentials": {
+        "openRouterApi": {
+          "id": "wIhkiQWSKbv8uQZo",
+          "name": "OpenRouter account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.message.chat.id }}",
+        "contextWindowLength": 200
+      },
+      "id": "1bd83992-eb8c-4aea-8888-878cd67f8a50",
+      "name": "Window Buffer Memory",
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "position": [
+        2672,
+        592
+      ],
+      "typeVersion": 1.3
+    },
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "id": "77562a10-731c-4c6a-a938-5f61c8e74266",
+      "name": "Telegram Trigger",
+      "type": "n8n-nodes-base.telegramTrigger",
+      "position": [
+        2304,
+        352
+      ],
+      "webhookId": "e7c9b1ad-f1ce-4ce5-a23e-63e9fd24b9e1",
+      "typeVersion": 1.2,
+      "credentials": {
+        "telegramApi": {
+          "id": "L72BQpGA78KsT59Y",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "={{ $json.output }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "id": "dfc79eec-88ac-4c6f-b189-4c07f782c0fa",
+      "name": "Send a text message",
+      "type": "n8n-nodes-base.telegram",
+      "position": [
+        2912,
+        352
+      ],
+      "webhookId": "e8c60f4d-74e3-4875-934a-043cf5e5815e",
+      "typeVersion": 1.2,
+      "credentials": {
+        "telegramApi": {
+          "id": "L72BQpGA78KsT59Y",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "sendPhoto",
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "binaryData": true,
+        "additionalFields": {}
+      },
+      "id": "d02178f2-962f-4dcd-978a-fffa8564ae1c",
+      "name": "Send a photo message",
+      "type": "n8n-nodes-base.telegram",
+      "position": [
+        3616,
+        352
+      ],
+      "webhookId": "358204d7-18d1-4486-bbc7-b75abdd0bd97",
+      "typeVersion": 1.2,
+      "credentials": {
+        "telegramApi": {
+          "id": "L72BQpGA78KsT59Y",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.message.text }}",
+        "options": {
+          "systemMessage": "You are a friendly and professional Virtual Chef Assistant. Your role is to help users with cooking, recipes, meal planning, food substitutions, nutrition tips, and step-by-step cooking guidance. Always reply in a clear, simple, and conversational tone. Suggest recipes based on available ingredients, dietary preferences, or cuisine styles. Provide step-by-step cooking instructions when asked. Offer ingredient substitutions if something is missing. Give nutrition advice when relevant, but do not provide medical advice. Be creative, encouraging, and make cooking feel fun and easy. If the user asks for meal plans, suggest balanced options. If the user asks general questions about food or cooking techniques, explain in an easy-to-understand way. Do not provide unsafe cooking practices or harmful instructions. Be warm, supportive, and encouraging like a personal chef."
+        }
+      },
+      "id": "24ceeec0-77af-441b-b479-62a3608effd8",
+      "name": "AI Recipe",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "position": [
+        2560,
+        352
+      ],
+      "typeVersion": 2.2
+    },
+    {
+      "parameters": {
+        "content": "## AI Chef Bot – Recipe + Food Image Generator \nImport this workflow into your n8n instance.\n\nConfigure your Telegram Bot Token (from BotFather).\n\nConfigure your OpenRouter API Key for AI text + image generation.\n\nSave and activate the workflow.\n\nGo to Telegram and send any dish name (e.g., Polpette di pesce).\n\nThe bot replies with:\n\n📖 A full recipe.\n\n📸 A restaurant-plated realistic food image.",
+        "height": 464,
+        "width": 496
+      },
+      "id": "3a28861d-d7cb-490a-b8a5-aa48c0846a43",
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1824,
+        1312
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "07b31ef9-4448-429a-8c7c-5a1b2ecbd377",
+      "name": "OpenAI Chat Model for Image Prompt",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1,
+      "position": [
+        3072,
+        560
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "Dkz2gSbXzjaxQoz3",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('Telegram Trigger').item.json.message.text }}",
+        "options": {
+          "systemMessage": "You are an expert food photography prompt generator. Based on the dish name provided, create a detailed DALL-E prompt for a professional, restaurant-quality food photograph. The prompt should describe: realistic plating on elegant dishware, professional lighting, appetizing presentation, high-end restaurant style, photorealistic quality, and appealing composition. Keep the prompt under 400 characters for DALL-E compatibility. Output ONLY the image generation prompt, nothing else."
+        }
+      },
+      "id": "4c2dfc11-94dc-4136-b351-da8d330e913d",
+      "name": "Generate Image Prompt",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        3072,
+        352
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "image",
+        "prompt": "={{ $json.output }}",
+        "options": {
+          "dalleQuality": "hd",
+          "size": "1024x1024"
+        }
+      },
+      "id": "eb96a185-bc92-4b88-9f91-3ef1d451f184",
+      "name": "Generate Food Image with DALL-E",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2.1,
+      "position": [
+        3392,
+        352
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "Dkz2gSbXzjaxQoz3",
+          "name": "OpenAi account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "AI Recipe": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "AI Recipe",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a text message": {
+      "main": [
+        [
+          {
+            "node": "Generate Image Prompt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Window Buffer Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Recipe",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Recipe",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model for Image Prompt": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Generate Image Prompt",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Image Prompt": {
+      "main": [
+        [
+          {
+            "node": "Generate Food Image with DALL-E",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Food Image with DALL-E": {
+      "main": [
+        [
+          {
+            "node": "Send a photo message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "6a76c8ee-d67d-400d-bccb-edbe9c8e2fc2",
+  "meta": {
+    "templateId": "8221",
+    "templateCredsSetupCompleted": true,
+    "instanceId": "92dabb5fdaa3cc1d9807a21bdcd188449120bd15642b019336a3bb5bdd211562"
+  },
+  "id": "hEk4jftr-bFPlVTYHC6qy",
+  "tags": []
+}
